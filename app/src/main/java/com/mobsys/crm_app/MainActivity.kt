@@ -1,20 +1,188 @@
 package com.mobsys.crm_app
 
+import android.content.res.Configuration
 import android.os.Bundle
+import android.util.Log
+import android.view.MenuItem
+import android.view.View
+import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
+import androidx.drawerlayout.widget.DrawerLayout
+import com.firebase.ui.auth.AuthUI
+import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
+import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult
+import com.google.android.material.navigation.NavigationView
+import com.google.firebase.FirebaseApp
+import com.google.firebase.auth.FirebaseAuth
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
+
+
+
+    private val signInLauncher = registerForActivityResult(
+        FirebaseAuthUIActivityResultContract(),
+    ) { res ->
+        this.onSignInResult(res)
+    }
+    private lateinit var auth : FirebaseAuth
+
+    // Drawer-related
+    private var drawerLayout: DrawerLayout? = null
+    private var toggle: ActionBarDrawerToggle? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+        FirebaseApp.initializeApp(this)
+
+        // Initialize Firebase Auth and skip sign-in if already signed in
+        auth = FirebaseAuth.getInstance()
+        val currentUser = auth.currentUser
+
+        setupDrawer()
+
+        if (currentUser != null) {
+            Log.d("Authentication", "Already signed in: ${currentUser.email}")
+            // Update header with user info
+            updateNavHeader(currentUser.email)
+            // User is signed in — proceed with app logic (navigate to main UI, etc.)
+        } else {
+            createSignInIntent()
+        }
+
+
+    }
+
+    private fun setupDrawer() {
+        // Find views
+        drawerLayout = findViewById(R.id.drawer_layout)
+        val toolbar = findViewById<Toolbar>(R.id.toolbar)
+        val navigationView = findViewById<NavigationView>(R.id.nav_view)
+        val content = findViewById<View>(R.id.content_frame)
+
+        // Setup toolbar as ActionBar
+        setSupportActionBar(toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
+        // Apply status bar inset padding (edge-to-edge)
+        ViewCompat.setOnApplyWindowInsetsListener(toolbar) { v, insets ->
+            val statusBars = insets.getInsets(WindowInsetsCompat.Type.statusBars())
+            v.updatePadding(top = statusBars.top)
             insets
         }
+
+        // Ensure nav header is pushed below status bar as well
+        val headerView = navigationView.getHeaderView(0)
+        headerView?.let { hv ->
+            ViewCompat.setOnApplyWindowInsetsListener(hv) { v, insets ->
+                val statusBars = insets.getInsets(WindowInsetsCompat.Type.statusBars())
+                v.updatePadding(top = statusBars.top)
+                insets
+            }
+        }
+
+        // Optionally keep content_frame below toolbar (usually not needed if toolbar height already accounted)
+        ViewCompat.setOnApplyWindowInsetsListener(content) { v, insets ->
+            // keep content top at 0 so toolbar overlaps content as usual; remove or adjust if needed:
+            v.updatePadding(top = 0)
+            insets
+        }
+
+        // Setup toggle
+        toggle = ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
+        drawerLayout?.addDrawerListener(toggle!!)
+        toggle?.syncState()
+
+        // Navigation listener
+        navigationView.setNavigationItemSelectedListener(this)
     }
+
+
+    private fun updateNavHeader(email: String?) {
+        val navigationView = findViewById<NavigationView>(R.id.nav_view)
+        val header: View? = navigationView.getHeaderView(0)
+        val emailView = header?.findViewById<TextView>(R.id.nav_header_email)
+        emailView?.text = email ?: getString(R.string.nav_header_title)
+    }
+
+    override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.nav_logout -> {
+                // Perform sign out
+                AuthUI.getInstance().signOut(this).addOnCompleteListener {
+                    Log.d("Authentication", "User signed out")
+                    // After sign-out, start sign-in flow again
+                    createSignInIntent()
+                }
+            }
+        }
+        // close drawer
+        drawerLayout?.closeDrawers()
+        return true
+    }
+
+    private fun createSignInIntent() {
+        // [START auth_fui_create_intent]
+        // Choose authentication providers
+        val providers = arrayListOf(
+            AuthUI.IdpConfig.EmailBuilder().build(),
+        )
+
+        // Create and launch sign-in intent
+        val signInIntent = AuthUI.getInstance()
+            .createSignInIntentBuilder()
+            .setAvailableProviders(providers)
+            .setTheme(R.style.LoginStyle)
+            .build()
+        signInLauncher.launch(signInIntent)
+        // [END auth_fui_create_intent]
+    }
+
+    private fun onSignInResult(result: FirebaseAuthUIAuthenticationResult) {
+        val response = result.idpResponse
+        if (result.resultCode == RESULT_OK) {
+            // Successfully signed in
+            auth = FirebaseAuth.getInstance()
+            val user = auth.currentUser
+            Log.d("Authentication", "User signed in: ${user?.email}")
+
+            // Update header after sign-in
+            updateNavHeader(user?.email)
+
+            // ...
+        } else {
+            // Sign in failed. If response is null the user canceled the
+            // sign-in flow using the back button. Otherwise check
+            // response.getError().getErrorCode() and handle the error.
+            // ...
+            Log.d("Authentication", "Sign-in failed: $response")
+        }
+    }
+
+    override fun onPostCreate(savedInstanceState: Bundle?) {
+        super.onPostCreate(savedInstanceState)
+        // Sync toggle state after onRestoreInstanceState has occurred.
+        toggle?.syncState()
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        toggle?.onConfigurationChanged(newConfig)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        // Let the toggle handle the home button
+        if (toggle?.onOptionsItemSelected(item) == true) {
+            return true
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
 }

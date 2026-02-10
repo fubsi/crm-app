@@ -6,4 +6,5 @@
     </style>
 
     <style name="Theme.Crmapp" parent="Base.Theme.Crmapp" />
+    <style name="LoginStyle" parent="Theme.Material3.DynamicColors.DayNight" />
 </resources>

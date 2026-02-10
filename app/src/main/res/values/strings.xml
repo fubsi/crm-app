@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">crm-app</string>
+    <string name="navigation_drawer_open">Öffne Navigation</string>
+    <string name="navigation_drawer_close">Schließe Navigation</string>
+    <string name="nav_header_title">Gast</string>
+    <string name="nav_logout">Abmelden</string>
 </resources>
