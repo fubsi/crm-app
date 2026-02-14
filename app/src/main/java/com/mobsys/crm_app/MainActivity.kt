@@ -20,6 +20,12 @@ import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
+import io.ktor.client.*
+import io.ktor.client.engine.cio.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.client.plugins.*
+import kotlinx.coroutines.*
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
@@ -35,6 +41,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     // Drawer-related
     private var drawerLayout: DrawerLayout? = null
     private var toggle: ActionBarDrawerToggle? = null
+
+    private val httpClient = HttpClient(CIO) {
+        install(HttpTimeout) {
+            requestTimeoutMillis = 15000
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,6 +69,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             createSignInIntent()
         }
 
+        performNetworkRequest()
 
     }
 
@@ -183,6 +196,19 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             return true
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    private fun performNetworkRequest() {
+        // Example of a network request using Ktor client
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response: HttpResponse = httpClient.get("http://192.168.1.113:5000/api/protokoll")
+                val responseBody: String = response.bodyAsText()
+                Log.d("HTTP Client", "Response: $responseBody")
+            } catch (e: Exception) {
+                Log.e("HTTP Client", "Error performing network request", e)
+            }
+        }
     }
 
 }
