@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
 import android.view.View
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.ActionBarDrawerToggle
@@ -14,18 +15,25 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
 import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
+import com.mobsys.crm_app.adapter.AppointmentAdapter
+import com.mobsys.crm_app.model.AppointmentsResponse
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.request.*
-import io.ktor.client.statement.*
 import io.ktor.client.plugins.*
+import io.ktor.client.call.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.*
+import kotlinx.serialization.json.Json
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
@@ -46,6 +54,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         install(HttpTimeout) {
             requestTimeoutMillis = 15000
         }
+        install(ContentNegotiation) {
+            json(Json {
+                ignoreUnknownKeys = true
+                isLenient = true
+            })
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -62,14 +76,16 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         if (currentUser != null) {
             Log.d("Authentication", "Already signed in: ${currentUser.email}")
+            Log.d("Authentication", "User UID: ${currentUser.uid}")
             // Update header with user info
             updateNavHeader(currentUser.email)
-            // User is signed in — proceed with app logic (navigate to main UI, etc.)
+            // User is signed in — proceed with app logic
+            performNetworkRequest()
         } else {
+            Log.d("Authentication", "No user signed in, showing sign-in screen")
             createSignInIntent()
         }
 
-        performNetworkRequest()
 
     }
 
@@ -165,16 +181,17 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             auth = FirebaseAuth.getInstance()
             val user = auth.currentUser
             Log.d("Authentication", "User signed in: ${user?.email}")
+            Log.d("Authentication", "User UID: ${user?.uid}")
 
             // Update header after sign-in
             updateNavHeader(user?.email)
 
-            // ...
+            // Fetch appointments after successful sign-in
+            performNetworkRequest()
         } else {
             // Sign in failed. If response is null the user canceled the
             // sign-in flow using the back button. Otherwise check
             // response.getError().getErrorCode() and handle the error.
-            // ...
             Log.d("Authentication", "Sign-in failed: $response")
         }
     }
@@ -199,14 +216,69 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun performNetworkRequest() {
-        // Example of a network request using Ktor client
+        val loadingSpinner = findViewById<ProgressBar>(R.id.loading_spinner)
+        val recyclerView = findViewById<RecyclerView>(R.id.appointments_recycler_view)
+
+        // Show loading spinner
+        loadingSpinner.visibility = View.VISIBLE
+        recyclerView.visibility = View.GONE
+
+        // Get current user's UID
+        val currentUser = auth.currentUser
+        val currentUid = currentUser?.uid
+
+        if (currentUid == null) {
+            Log.e("HTTP Client", "No user logged in, cannot fetch appointments")
+            // Hide loading spinner and show empty list
+            loadingSpinner.visibility = View.GONE
+            recyclerView.visibility = View.VISIBLE
+            recyclerView.layoutManager = LinearLayoutManager(this@MainActivity)
+            recyclerView.adapter = AppointmentAdapter(emptyList())
+            return
+        }
+
+        Log.d("HTTP Client", "Fetching appointments for UID: $currentUid")
+
+        // Perform network request in background
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val response: HttpResponse = httpClient.get("http://192.168.1.113:5000/api/protokoll")
-                val responseBody: String = response.bodyAsText()
-                Log.d("HTTP Client", "Response: $responseBody")
+                val response: AppointmentsResponse = httpClient.get("http://192.168.2.34:5000/api/termine").body()
+                Log.d("HTTP Client", "Successfully fetched ${response.count} appointments from API")
+
+                // Log all appointments with their UIDs for debugging
+                response.appointments.forEachIndexed { index, appointment ->
+                    Log.d("HTTP Client", "Appointment $index: ID=${appointment.id}, UID='${appointment.uid}', Title='${appointment.title}'")
+                }
+                Log.d("HTTP Client", "Current user UID: '$currentUid'")
+
+                // Filter appointments by current user's UID
+                val filteredAppointments = response.appointments.filter { appointment ->
+                    val matches = appointment.uid == currentUid
+                    Log.d("HTTP Client", "Comparing '${appointment.uid}' == '$currentUid': $matches")
+                    matches
+                }
+                Log.d("HTTP Client", "Filtered to ${filteredAppointments.size} appointments for current user")
+
+                // Update UI on main thread
+                withContext(Dispatchers.Main) {
+                    // Hide loading spinner
+                    loadingSpinner.visibility = View.GONE
+                    recyclerView.visibility = View.VISIBLE
+
+                    // Setup RecyclerView with filtered appointments
+                    recyclerView.layoutManager = LinearLayoutManager(this@MainActivity)
+                    recyclerView.adapter = AppointmentAdapter(filteredAppointments)
+                }
             } catch (e: Exception) {
                 Log.e("HTTP Client", "Error performing network request", e)
+
+                // Update UI on main thread - show empty list
+                withContext(Dispatchers.Main) {
+                    loadingSpinner.visibility = View.GONE
+                    recyclerView.visibility = View.VISIBLE
+                    recyclerView.layoutManager = LinearLayoutManager(this@MainActivity)
+                    recyclerView.adapter = AppointmentAdapter(emptyList())
+                }
             }
         }
     }
