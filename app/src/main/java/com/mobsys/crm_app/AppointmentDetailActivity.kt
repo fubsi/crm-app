@@ -93,8 +93,11 @@ class AppointmentDetailActivity : AppCompatActivity() {
         // Load and display participants
         loadParticipants(appointment.id)
 
-        // Setup protocol button
-        setupProtocolButton(appointment.id)
+        // Setup protocol button with delay to avoid rate limiting
+        CoroutineScope(Dispatchers.Main).launch {
+            delay(800) // Wait 800ms after participants load started
+            setupProtocolButton(appointment.id)
+        }
     }
 
     private fun displayAppointmentDetails(appointment: Appointment) {
@@ -151,6 +154,9 @@ class AppointmentDetailActivity : AppCompatActivity() {
         // Perform network request in background
         CoroutineScope(Dispatchers.IO).launch {
             try {
+                // Add delay to avoid rate limiting
+                delay(300)
+
                 Log.d("ParticipantLoader", "Fetching participants for termin_id: $terminId")
                 val response: ParticipantsResponse = httpClient.get("http://192.168.2.34:5000/api/teilnehmer").body()
                 Log.d("ParticipantLoader", "Successfully fetched ${response.count} participants from API")
@@ -222,6 +228,9 @@ class AppointmentDetailActivity : AppCompatActivity() {
             // Load protocol in background
             CoroutineScope(Dispatchers.IO).launch {
                 try {
+                    // Add delay to avoid rate limiting
+                    delay(400)
+
                     Log.d("ProtocolLoader", "Fetching protocols for termin_id: $terminId")
                     val response: ProtocolsResponse = httpClient.get("http://192.168.2.34:5000/api/protokoll").body()
                     Log.d("ProtocolLoader", "Successfully fetched ${response.count} protocols from API")

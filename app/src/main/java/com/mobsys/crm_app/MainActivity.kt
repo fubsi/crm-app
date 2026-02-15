@@ -255,6 +255,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         // Perform network request in background
         CoroutineScope(Dispatchers.IO).launch {
             try {
+                // Add delay to avoid rate limiting on initial load
+                delay(250)
+
                 val response: AppointmentsResponse = httpClient.get("http://192.168.2.34:5000/api/termine").body()
                 Log.d("HTTP Client", "Successfully fetched ${response.count} appointments from API")
 

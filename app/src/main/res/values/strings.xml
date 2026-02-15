@@ -29,12 +29,15 @@
     <string name="hint_appointment_end_time">Endzeit</string>
     <string name="label_appointment_type_selection">Terminart auswählen</string>
     <string name="btn_save_appointment">Termin speichern</string>
+    <string name="btn_add_participant">Hinzufügen</string>
     <string name="error_empty_location">Bitte Ort eingeben</string>
     <string name="error_empty_start">Bitte Startdatum und -zeit eingeben</string>
     <string name="error_empty_end">Bitte Enddatum und -zeit eingeben</string>
     <string name="error_no_type">Bitte Terminart auswählen</string>
     <string name="appointment_saved_success">Termin erfolgreich gespeichert</string>
     <string name="appointment_save_error">Fehler beim Speichern des Termins</string>
+    <string name="participant_already_added">Teilnehmer bereits hinzugefügt</string>
+    <string name="select_contact_first">Bitte wählen Sie einen Kontakt aus</string>
 
     <!-- Protocol Detail -->
     <string name="protocol_detail_title">Protokolldetails</string>
