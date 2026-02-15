@@ -4,4 +4,14 @@
     <string name="navigation_drawer_close">Schließe Navigation</string>
     <string name="nav_header_title">Gast</string>
     <string name="nav_logout">Abmelden</string>
+
+    <!-- Appointment Detail -->
+    <string name="appointment_detail_title">Termindetails</string>
+    <string name="label_appointment_type">Terminart</string>
+    <string name="label_appointment_title">Titel</string>
+    <string name="label_appointment_date">Datum</string>
+    <string name="label_appointment_time">Zeitraum</string>
+    <string name="label_appointment_location">Ort</string>
+    <string name="label_appointment_id">Termin-ID</string>
+    <string name="label_appointment_uid">UID</string>
 </resources>
