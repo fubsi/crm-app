@@ -1,5 +1,6 @@
 package com.mobsys.crm_app
 
+import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
@@ -85,8 +86,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             Log.d("Authentication", "No user signed in, showing sign-in screen")
             createSignInIntent()
         }
+    }
 
-
+    override fun onResume() {
+        super.onResume()
+        // Refresh appointments when returning to this activity
+        val currentUser = auth.currentUser
+        if (currentUser != null) {
+            performNetworkRequest()
+        }
     }
 
     private fun setupDrawer() {
@@ -143,6 +151,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
+            R.id.nav_add_appointment -> {
+                // Open AppointmentCreateActivity
+                val intent = Intent(this, AppointmentCreateActivity::class.java)
+                startActivity(intent)
+            }
             R.id.nav_logout -> {
                 // Perform sign out
                 AuthUI.getInstance().signOut(this).addOnCompleteListener {

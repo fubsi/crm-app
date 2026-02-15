@@ -4,6 +4,7 @@
     <string name="navigation_drawer_close">Schließe Navigation</string>
     <string name="nav_header_title">Gast</string>
     <string name="nav_logout">Abmelden</string>
+    <string name="nav_add_appointment">Termin hinzufügen</string>
 
     <!-- Appointment Detail -->
     <string name="appointment_detail_title">Termindetails</string>
@@ -14,4 +15,48 @@
     <string name="label_appointment_location">Ort</string>
     <string name="label_appointment_id">Termin-ID</string>
     <string name="label_appointment_uid">UID</string>
+    <string name="label_appointment_participants">Teilnehmer</string>
+    <string name="no_participants">Keine Teilnehmer</string>
+    <string name="btn_view_protocol">Protokoll anzeigen</string>
+
+    <!-- Appointment Create -->
+    <string name="appointment_create_title">Termin erstellen</string>
+    <string name="hint_appointment_title">Titel eingeben (optional)</string>
+    <string name="hint_appointment_location">Ort eingeben</string>
+    <string name="hint_appointment_start_date">Startdatum</string>
+    <string name="hint_appointment_start_time">Startzeit</string>
+    <string name="hint_appointment_end_date">Enddatum</string>
+    <string name="hint_appointment_end_time">Endzeit</string>
+    <string name="label_appointment_type_selection">Terminart auswählen</string>
+    <string name="btn_save_appointment">Termin speichern</string>
+    <string name="error_empty_location">Bitte Ort eingeben</string>
+    <string name="error_empty_start">Bitte Startdatum und -zeit eingeben</string>
+    <string name="error_empty_end">Bitte Enddatum und -zeit eingeben</string>
+    <string name="error_no_type">Bitte Terminart auswählen</string>
+    <string name="appointment_saved_success">Termin erfolgreich gespeichert</string>
+    <string name="appointment_save_error">Fehler beim Speichern des Termins</string>
+
+    <!-- Protocol Detail -->
+    <string name="protocol_detail_title">Protokolldetails</string>
+    <string name="label_protocol_tldr">Zusammenfassung</string>
+    <string name="label_protocol_text">Protokolltext</string>
+    <string name="label_protocol_date">Protokolldatum</string>
+    <string name="label_protocol_duration">Dauer</string>
+    <string name="no_protocol_found">Kein Protokoll vorhanden</string>
+    <string name="protocol_duration_format">%d Minuten</string>
+
+    <!-- Protocol Create -->
+    <string name="protocol_create_title">Protokoll erstellen</string>
+    <string name="protocol_edit_title">Protokoll bearbeiten</string>
+    <string name="hint_protocol_tldr">Kurze Zusammenfassung eingeben</string>
+    <string name="hint_protocol_duration">Dauer in Minuten</string>
+    <string name="hint_protocol_text">Detailliertes Protokoll eingeben</string>
+    <string name="btn_save_protocol">Protokoll speichern</string>
+    <string name="btn_edit_protocol">Protokoll bearbeiten</string>
+    <string name="error_empty_tldr">Bitte Zusammenfassung eingeben</string>
+    <string name="error_empty_duration">Bitte Dauer eingeben</string>
+    <string name="error_empty_text">Bitte Protokolltext eingeben</string>
+    <string name="protocol_saved_success">Protokoll erfolgreich gespeichert</string>
+    <string name="protocol_updated_success">Protokoll erfolgreich aktualisiert</string>
+    <string name="protocol_save_error">Fehler beim Speichern des Protokolls</string>
 </resources>
