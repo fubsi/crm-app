@@ -11,7 +11,10 @@ data class KontaktInfo(
     val rolle: String,
     @SerialName("ref_typ")
     val refTyp: String,
-    val referenz: Int
+    @SerialName("person_Id")
+    val personId: Int? = null,
+    @SerialName("unternehmen_Id")
+    val unternehmenId: Int? = null
 )
 
 @Serializable

@@ -4,6 +4,7 @@ plugins {
     id("com.google.gms.google-services")
     kotlin("plugin.serialization") version "2.2.10"
     id("kotlin-parcelize")
+    id("com.google.devtools.ksp") version "2.2.10-2.0.2"
 }
 
 android {
@@ -64,4 +65,8 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
     //serialization
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
+    // room
+    implementation("androidx.room:room-runtime:2.7.0")
+    implementation("androidx.room:room-ktx:2.7.0")
+    ksp("androidx.room:room-compiler:2.7.0")
 }

@@ -26,6 +26,8 @@ import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.mobsys.crm_app.adapter.AppointmentAdapter
 import com.mobsys.crm_app.model.AppointmentsResponse
+import com.mobsys.crm_app.cache.AppointmentCache
+import com.mobsys.crm_app.database.AppDatabase
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.request.*
@@ -51,6 +53,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private var drawerLayout: DrawerLayout? = null
     private var toggle: ActionBarDrawerToggle? = null
 
+    // Offline cache
+    private lateinit var appointmentCache: AppointmentCache
+
     private val httpClient = HttpClient(CIO) {
         install(HttpTimeout) {
             requestTimeoutMillis = 15000
@@ -68,6 +73,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
         FirebaseApp.initializeApp(this)
+
+        // Initialize offline cache
+        appointmentCache = AppointmentCache(AppDatabase.getInstance(this))
 
         // Initialize Firebase Auth and skip sign-in if already signed in
         auth = FirebaseAuth.getInstance()
@@ -275,6 +283,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 }
                 Log.d("HTTP Client", "Filtered to ${filteredAppointments.size} appointments for current user")
 
+                // Persist fetched appointments to cache
+                appointmentCache.updateCache(currentUid, filteredAppointments)
+
                 // Update UI on main thread
                 withContext(Dispatchers.Main) {
                     // Hide loading spinner
@@ -286,14 +297,18 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     recyclerView.adapter = AppointmentAdapter(filteredAppointments)
                 }
             } catch (e: Exception) {
-                Log.e("HTTP Client", "Error performing network request", e)
+                Log.e("HTTP Client", "Error performing network request — trying offline cache", e)
 
-                // Update UI on main thread - show empty list
+                // Load cached appointments as fallback
+                val cachedAppointments = appointmentCache.getCachedAppointments(currentUid)
+                Log.d("HTTP Client", "Loaded ${cachedAppointments.size} appointments from cache")
+
+                // Update UI on main thread
                 withContext(Dispatchers.Main) {
                     loadingSpinner.visibility = View.GONE
                     recyclerView.visibility = View.VISIBLE
                     recyclerView.layoutManager = LinearLayoutManager(this@MainActivity)
-                    recyclerView.adapter = AppointmentAdapter(emptyList())
+                    recyclerView.adapter = AppointmentAdapter(cachedAppointments)
                 }
             }
         }
