@@ -16,8 +16,6 @@ data class Adresse(
 data class ReferenzData(
     val id: Int,
     val name: String,
-    val titel: String,
-    val geburtsdatum: String,
     @SerialName("adresse_id")
     val adresseId: Int,
     val adresse: Adresse
