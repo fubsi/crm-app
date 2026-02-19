@@ -121,7 +121,7 @@ class AppointmentCreateActivity : AppCompatActivity() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 Log.d("AppointmentCreate", "Fetching appointment types")
-                val response: AppointmentTypesResponse = httpClient.get("http://192.168.2.34:5000/api/terminart").body()
+                val response: AppointmentTypesResponse = httpClient.get("${getString(R.string.api_base_url)}/api/terminart").body()
                 Log.d("AppointmentCreate", "Successfully fetched ${response.count} appointment types")
 
                 appointmentTypes = response.types
@@ -175,7 +175,7 @@ class AppointmentCreateActivity : AppCompatActivity() {
                 delay(200)
 
                 // Get raw response first to see what we're getting
-                val httpResponse = httpClient.get("http://192.168.2.34:5000/api/kontakt")
+                val httpResponse = httpClient.get("${getString(R.string.api_base_url)}/api/kontakt")
                 val responseBody = httpResponse.bodyAsText()
                 Log.d("AppointmentCreate", "Raw response: $responseBody")
                 Log.d("AppointmentCreate", "Response status: ${httpResponse.status}")
@@ -199,7 +199,7 @@ class AppointmentCreateActivity : AppCompatActivity() {
                 delay(100)
 
                 // Try to parse the response
-                val response: ContactsResponse = httpClient.get("http://192.168.2.34:5000/api/kontakt").body()
+                val response: ContactsResponse = httpClient.get("${getString(R.string.api_base_url)}/api/kontakt").body()
                 Log.d("AppointmentCreate", "Successfully fetched ${response.count} contacts")
 
                 contacts = response.contacts
@@ -429,7 +429,7 @@ class AppointmentCreateActivity : AppCompatActivity() {
 
                 Log.d("AppointmentCreate", "Request body: $requestBody")
 
-                val response: HttpResponse = httpClient.post("http://192.168.2.34:5000/api/termine") {
+                val response: HttpResponse = httpClient.post("${getString(R.string.api_base_url)}/api/termine") {
                     contentType(ContentType.Application.Json)
                     setBody(requestBody.toString())
                 }
@@ -514,7 +514,7 @@ class AppointmentCreateActivity : AppCompatActivity() {
 
                 Log.d("AppointmentCreate", "Saving participant: ${contact.rolle} (ID: ${contact.id})")
 
-                val participantResponse: HttpResponse = httpClient.post("http://192.168.2.34:5000/api/teilnehmer") {
+                val participantResponse: HttpResponse = httpClient.post("${getString(R.string.api_base_url)}/api/teilnehmer") {
                     contentType(ContentType.Application.Json)
                     setBody(participantBody.toString())
                 }

@@ -158,7 +158,7 @@ class AppointmentDetailActivity : AppCompatActivity() {
                 delay(300)
 
                 Log.d("ParticipantLoader", "Fetching participants for termin_id: $terminId")
-                val response: ParticipantsResponse = httpClient.get("http://192.168.2.34:5000/api/teilnehmer").body()
+                val response: ParticipantsResponse = httpClient.get("${getString(R.string.api_base_url)}/api/teilnehmer").body()
                 Log.d("ParticipantLoader", "Successfully fetched ${response.count} participants from API")
 
                 // Filter participants by current appointment's ID
@@ -232,7 +232,7 @@ class AppointmentDetailActivity : AppCompatActivity() {
                     delay(400)
 
                     Log.d("ProtocolLoader", "Fetching protocols for termin_id: $terminId")
-                    val response: ProtocolsResponse = httpClient.get("http://192.168.2.34:5000/api/protokoll").body()
+                    val response: ProtocolsResponse = httpClient.get("${getString(R.string.api_base_url)}/api/protokoll").body()
                     Log.d("ProtocolLoader", "Successfully fetched ${response.count} protocols from API")
 
                     // Filter protocol by current appointment's ID

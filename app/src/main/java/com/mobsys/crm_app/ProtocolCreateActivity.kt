@@ -179,7 +179,7 @@ class ProtocolCreateActivity : AppCompatActivity() {
                         put("text", text)
                     }
 
-                    val response: HttpResponse = httpClient.put("http://192.168.2.34:5000/api/protokoll/${existingProtocol!!.id}") {
+                    val response: HttpResponse = httpClient.put("${getString(R.string.api_base_url)}/api/protokoll/${existingProtocol!!.id}") {
                         contentType(ContentType.Application.Json)
                         setBody(requestBody.toString())
                     }
@@ -219,7 +219,7 @@ class ProtocolCreateActivity : AppCompatActivity() {
                         put("text", text)
                     }
 
-                    val response: HttpResponse = httpClient.post("http://192.168.2.34:5000/api/protokoll") {
+                    val response: HttpResponse = httpClient.post("${getString(R.string.api_base_url)}/api/protokoll") {
                         contentType(ContentType.Application.Json)
                         setBody(requestBody.toString())
                     }

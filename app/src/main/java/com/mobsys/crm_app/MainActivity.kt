@@ -266,7 +266,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 // Add delay to avoid rate limiting on initial load
                 delay(250)
 
-                val response: AppointmentsResponse = httpClient.get("http://192.168.2.34:5000/api/termine").body()
+                val response: AppointmentsResponse = httpClient.get("${getString(R.string.api_base_url)}/api/termine").body()
                 Log.d("HTTP Client", "Successfully fetched ${response.count} appointments from API")
 
                 // Log all appointments with their UIDs for debugging
