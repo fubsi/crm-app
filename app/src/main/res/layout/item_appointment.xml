@@ -14,13 +14,13 @@
         android:padding="16dp">
 
         <TextView
-            android:id="@+id/appointment_type"
+            android:id="@+id/appointment_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textAppearance="@style/TextAppearance.Material3.HeadlineSmall"
             android:textStyle="bold"
             android:textColor="?attr/colorPrimary"
-            android:text="Terminart" />
+            android:text="Termintitel" />
 
         <LinearLayout
             android:layout_width="match_parent"

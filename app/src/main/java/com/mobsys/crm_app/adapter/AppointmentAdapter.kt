@@ -24,7 +24,7 @@ class AppointmentAdapter(private val appointments: List<Appointment>) :
     }
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val appointmentType: TextView = itemView.findViewById(R.id.appointment_type)
+        val appointmentTitle: TextView = itemView.findViewById(R.id.appointment_title)
         val appointmentDateTime: TextView = itemView.findViewById(R.id.appointment_datetime)
         val appointmentLocation: TextView = itemView.findViewById(R.id.appointment_location)
     }
@@ -38,7 +38,7 @@ class AppointmentAdapter(private val appointments: List<Appointment>) :
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val appointment = appointments[position]
 
-        holder.appointmentType.text = appointment.art.name
+        holder.appointmentTitle.text = appointment.title
         holder.appointmentLocation.text = appointment.ort
 
         // Format datetime

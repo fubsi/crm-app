@@ -509,7 +509,7 @@ class AppointmentCreateActivity : AppCompatActivity() {
                 val participantBody = buildJsonObject {
                     put("kontakt_id", contact.id)
                     put("termin_id", terminId)
-                    put("ist_haupt", index == 0) // First participant is main contact
+                    put("istHaupt", index == 0) // First participant is main contact
                 }
 
                 Log.d("AppointmentCreate", "Saving participant: ${contact.rolle} (ID: ${contact.id})")
