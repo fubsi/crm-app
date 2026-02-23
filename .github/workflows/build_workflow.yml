@@ -1,0 +1,103 @@
+name: Build Release APK
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  workflow_dispatch:
+  
+permissions:
+  contents: write
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3.10.0
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Decode google-services.json
+      shell: bash
+      env :
+        GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+      run: echo $GOOGLE_SERVICES_JSON | base64 -d > app/google-services.json
+          
+      
+    - name: Cache Gradle Wrapper Files
+      uses: actions/cache@v3
+      with:
+        path: ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-wrapper-
+
+    - name: Cache Gradle Cached Files
+      uses: actions/cache@v3
+      with:
+        path: ~/.gradle/caches
+        key: ${{ runner.os }}-gradle-caches-${{ hashFiles('**/*.gradle*') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-caches-
+
+    - name: Make gradlew executable
+      run: chmod +x ./gradlew
+
+    - name: Run Tests
+      run: ./gradlew test
+
+    - name: Build APK
+      run: ./gradlew assembleRelease
+
+    - name: Upload APK (Artifact)
+      uses: actions/upload-artifact@v4
+      with:
+        name: release-apk
+        path: app/build/outputs/apk/release/app-release-unsigned.apk
+        
+  release:
+    name: Create GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    
+    - name: Download Build Artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: release-apk
+
+    - name: Determine version (example)
+      id: version
+      run: echo "version=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
+
+    - name: Create Git Tag
+      id: create_tag
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git tag ${{ env.version }}
+        git push origin ${{ env.version }}
+
+    - name: Create Release
+      id: create_release
+      if: steps.create_tag.outcome == 'success'
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ env.version }}
+        files: '*.apk' # Upload the APK to the Release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
