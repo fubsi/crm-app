@@ -455,6 +455,9 @@ class AppointmentCreateActivity : AppCompatActivity() {
                     if (selectedParticipants.isNotEmpty() && terminId != null) {
                         Log.d("AppointmentCreate", "Saving ${selectedParticipants.size} participants for termin_id: $terminId")
                         saveParticipants(terminId)
+                        saveOrder(terminId)
+                        Log.d("AppointmentCreate", "Saving dummy order for termin_id: $terminId")
+
                     } else if (selectedParticipants.isNotEmpty()) {
                         Log.w("AppointmentCreate", "Cannot save participants: termin_id not found in response")
                     }
@@ -529,6 +532,37 @@ class AppointmentCreateActivity : AppCompatActivity() {
             }
         }
     }
+
+    private suspend fun saveOrder(terminId: Int) {
+        val orderParticipant = selectedParticipants[0]
+        try {
+
+
+            val orderBody = buildJsonObject {
+                put("bezeichnung", "Termin ${terminId}")
+                put("wichtigkeit_id", 2) // Placeholter for "normal" importance
+                put("kontakt_id", orderParticipant.id) // participant
+                put("termin_id", terminId) // associated appointment
+            }
+
+            Log.d("AppointmentCreate", "Saving order: ${orderBody.get("bezeichnung")}")
+
+            val participantResponse: HttpResponse = httpClient.post("${getString(R.string.api_base_url)}/api/auftrag") {
+                contentType(ContentType.Application.Json)
+                setBody(orderBody.toString())
+            }
+
+            if (participantResponse.status.isSuccess()) {
+                Log.d("AppointmentCreate", "Order saved successfully: ${orderBody.get("bezeichnung")}")
+            } else {
+                Log.e("AppointmentCreate", "Failed to save order: ${participantResponse.status}")
+            }
+        } catch (e: Exception) {
+            Log.e("AppointmentCreate", "Error saving order for ${terminId}", e)
+        }
+
+    }
+
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
