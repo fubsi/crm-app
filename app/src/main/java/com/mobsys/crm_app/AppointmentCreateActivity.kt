@@ -228,7 +228,7 @@ class AppointmentCreateActivity : AppCompatActivity() {
         val addButton = findViewById<MaterialButton>(R.id.btn_add_participant)
 
         // Add placeholder at beginning
-        val contactNames = listOf("Kontakt auswählen...") + contacts.map { it.displayName }
+        val contactNames = listOf("Kontakt auswählen...") + contacts.map { it.referenzData.name + " - " + it.email }
         val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, contactNames)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinner.adapter = adapter
@@ -269,7 +269,7 @@ class AppointmentCreateActivity : AppCompatActivity() {
                 container,
                 false
             ).apply {
-                findViewById<TextView>(android.R.id.text1).text = contact.rolle
+                findViewById<TextView>(android.R.id.text1).text = contact.referenzData.name
                 findViewById<TextView>(android.R.id.text2).text = contact.email
 
                 // Add remove functionality
